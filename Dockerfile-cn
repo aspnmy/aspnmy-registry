@@ -1,6 +1,6 @@
 # 国外节点使用
 # 一致性构建镜像 buildah bud --no-cache -f Dockerfile-cn -t aspnmy/aspnmy_registry:cache-cn
-FROM registry:2
+FROM registry:latest
 
 ADD htpasswd/aspnmy_registry.htpasswd /etc/docker/registry/aspnmy_registry.htpasswd
 ADD cn/*.pem /certs/
