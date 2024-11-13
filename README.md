@@ -20,7 +20,9 @@ services:
         restart: always
         container_name: registry
         volumes:
-            - $(pwd)/myregistry.htpasswd:/etc/docker/registry/htpasswd:ro
+            - /opt/aspnmy_registry/myregistry.htpasswd:/etc/docker/registry/htpasswd:ro
+            # 配置缓存模式
+            - /opt/aspnmy_registry/config.yml:/etc/docker/registry/config.yml:ro
         environment:
             - REGISTRY_AUTH=htpasswd
             - REGISTRY_AUTH_HTPASSWD_PATH=/etc/docker/registry/htpasswd
@@ -36,12 +38,14 @@ services:
 ```
 podman run --name podman-registry \
     -p 5000:5000 \
-    -v /opt/registry/data:/var/lib/registry:z \
-    -v /opt/registry/auth:/auth:z \
+    -v /opt/aspnmy_registry/data:/var/lib/registry:z \
+    # 配置缓存模式
+    -v /opt/aspnmy_registry/config.yml:/etc/docker/registry/config.yml:ro
+    -v /opt/aspnmy_registry/auth:/auth:z \
     -e "REGISTRY_AUTH=htpasswd" \
     -e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm" \
     -e REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd \
-    -v /opt/registry/certs:/certs:z \
+    -v /opt/aspnmy_registry/certs:/certs:z \
     -e "REGISTRY_HTTP_TLS_CERTIFICATE=/certs/domain.crt" \
     -e "REGISTRY_HTTP_TLS_KEY=/certs/domain.key" \
     -e REGISTRY_COMPATIBILITY_SCHEMA1_ENABLED=true \
@@ -62,6 +66,6 @@ podman run --name podman-registry \
 - 现在,当你尝试拉取一个镜像时,如果它在你的私有 Registry 中不存在,Registry 将会从上游 Registry 拉取并缓存它:
 
 - proxy-config-en.yml
-    国外节点请使用这个配置文件
+    国外节点请使用这个配置文件(国外节点pull与push均可)
 - proxy-config-cn.yml
-    国内节点请使用这个配置文件
+    国内节点请使用这个配置文件(使用这个配置文件只能执行pull业务无法push)

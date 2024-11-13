@@ -32,3 +32,7 @@
 *.out
 *.app
 
+
+# 业务配置文件
+**.htpasswd
+**.pem
