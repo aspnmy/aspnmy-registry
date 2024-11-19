@@ -44,7 +44,7 @@ EMAIL=$(jq -r '.email' $CONFIG_FILE)
 CF_APK=$(jq -r '.cf_key' $CONFIG_FILE)
 ZONE_ID=$(jq -r '.zone_id' $CONFIG_FILE)
 SUBDOMAIN=$(jq -r '.sub_domain' $CONFIG_FILE)
-ip_address=$(get_ip)
+ip_address=$(curl -s https://api.ipify.org)
 
 
 
