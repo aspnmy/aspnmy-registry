@@ -85,7 +85,7 @@ set_htpasswd() {
 }
 
 update_docker_env(){
-    cp -r  /etc/letsencrypt/live/$DOMAIN/*.*  $BASE_DIR/certs/
+    cp -rf  /etc/letsencrypt/live/$DOMAIN/*.*  $BASE_DIR/certs/
     curl -sSL https://raw.githubusercontent.com/aspnmy/aspnmy-registry/refs/heads/docker-registry/en/proxy-config-en.yml -o $BASE_DIR/config/proxy-config-en.yml
     log "更新aspnmy-registry-cache初始参数完成"
 }
