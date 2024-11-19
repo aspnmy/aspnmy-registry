@@ -94,9 +94,6 @@ update_docker_env(){
 }
 
 set_docker_compane_file(){
-# Certificate is saved at: /etc/letsencrypt/live/registry.hk.earth-oline.org/fullchain.pem
-# Key is saved at:         /etc/letsencrypt/live/registry.hk.earth-oline.org/privkey.pem
-
 
 # 文件名
 FILE_NAME="$BASE_DIR/config/docker-registry.yml"
