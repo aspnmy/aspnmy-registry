@@ -108,8 +108,8 @@ services:
             # 配置缓存模式
             - $BASE_DIR/config/proxy-config-en.yml:/etc/docker/registry/config.yml:ro
             # 配置ssl证书此处为目录模式
-            - /etc/letsencrypt/live/$DOMAIN/fullchain.pem:/certs/fullchain.pem
-            - /etc/letsencrypt/live/$DOMAIN/privkey.pem:/certs/privkey.pem
+            #- /etc/letsencrypt/live/$DOMAIN/fullchain.pem:/certs/fullchain.pem
+            #- /etc/letsencrypt/live/$DOMAIN/privkey.pem:/certs/privkey.pem
             # 配置仓库实际挂载地址
             - /opt/aspnmy_registry/registry_data:/var/lib/registry
         environment:
