@@ -24,6 +24,7 @@ services:
             # 配置缓存模式
             - /opt/aspnmy_registry/config.yml:/etc/docker/registry/config.yml:ro
         environment:
+            - REGISTRY_PROXY_REMOTEURL=https://registry-1.docker.io
             - REGISTRY_AUTH=htpasswd
             - REGISTRY_AUTH_HTPASSWD_PATH=/etc/docker/registry/htpasswd
             - REGISTRY_HTTP_TLS_CERTIFICATE=/certs/domain.crt
@@ -42,6 +43,7 @@ podman run --name podman-registry \
     # 配置缓存模式
     -v /opt/aspnmy_registry/config.yml:/etc/docker/registry/config.yml:ro
     -v /opt/aspnmy_registry/auth:/auth:z \
+    -e "REGISTRY_PROXY_REMOTEURL=https://registry-1.docker.io"
     -e "REGISTRY_AUTH=htpasswd" \
     -e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm" \
     -e REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd \
