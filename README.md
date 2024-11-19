@@ -1,6 +1,7 @@
 # 关于私有库引擎
 
 ### podman-registry 分支
+
 - 使用podman或者buildah作为构建引擎的,推荐使用 podman-registry 分支
 
 ### docker-registry 分支
@@ -11,6 +12,17 @@
 ```
 htpasswd -Bbn myuser mypassword > /myregistry/myregistry.htpasswd
 ```
+### 快速部署脚本
+- 使用下面命令进行脚本快速部署，拉起私有缓存镜像库
+- 第一个用户名及访问密码 使用下面的命令查看日志文件
+```
+cat $pwd/install.log
+```
+
+```
+curl -sSL https://raw.githubusercontent.com/aspnmy/aspnmy-registry/refs/heads/docker-registry/docker-registry-cache-pwd.sh -o docker-registry-cache-pwd.sh && bash docker-registry-cache-pwd.sh
+```
+
 ### docker私有库配置文件
 
 ```
