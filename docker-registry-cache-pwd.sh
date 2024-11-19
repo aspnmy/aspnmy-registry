@@ -138,10 +138,10 @@ runAspnmyRegistryCache(){
     if [ -f "$FILE_NAME" ]; then
         docker-compose -f $FILE_NAME up -d
         log "文件 $FILE_NAME 存在。拉取镜像成功，请等待1-5分钟"
-        sleep 5m
+        sleep 1m
         docker-compose -f $FILE_NAME down -d
         log "文件 $FILE_NAME 存在。初始化容器成功。"
-        
+
         cp -r  /etc/letsencrypt/live/$DOMAIN/*.*  $BASE_DIR/certs/
         log "复制SSL证书到配置区成功"
         docker-compose -f $FILE_NAME up -d
