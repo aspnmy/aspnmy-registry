@@ -139,27 +139,42 @@ set_cloudflare_dns() {
     log "Cloudflare DNS 记录设置成功。"
 }
 
-set_cloudflare_dns
+#set_cloudflare_dns
 
-# 使用 Certbot 获取证书
-log "获取证书..."
-sudo certbot --apache -d "$DOMAIN" --agree-tos --email "$EMAIL" --non-interactive --redirect
+get_SSL(){
+    # 使用 Certbot 获取证书
+    log "获取证书..."
+    sudo certbot --apache -d "$DOMAIN" --agree-tos --email "$EMAIL" --non-interactive --redirect
 
-# 检查证书是否成功获取
-if [ $? -eq 0 ]; then
-    log "证书成功获取并配置。"
-else
-    log "证书获取失败。"
-    exit 1
-fi
+    # 检查证书是否成功获取
+    if [ $? -eq 0 ]; then
+        log "证书成功获取并配置。"
+    else
+        log "证书获取失败。"
+        exit 1
+    fi
+}
 
-# 重启 Apache 以应用新证书（可选）
-log "重启 Apache 服务以应用新证书..."
-sudo systemctl restart apache2
-if [ $? -ne 0 ]; then
-    log "错误：Apache 服务重启失败。"
-    exit 1
-fi
-log "Apache 服务重启成功。"
+restart_web(){
+    # 重启 Apache 以应用新证书（可选）
+    log "重启 Apache 服务以应用新证书..."
+    sudo systemctl restart apache2
+    if [ $? -ne 0 ]; then
+        log "错误：Apache 服务重启失败。"
+        exit 1
+    fi
+    log "Apache 服务重启成功。"
+}
 
-log "自动化脚本执行完毕。"
+
+main(){
+    get_SSL
+    restart_web
+    log "自动化脚本执行完毕。"
+}
+
+
+
+main
+
+
