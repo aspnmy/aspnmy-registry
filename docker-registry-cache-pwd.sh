@@ -135,8 +135,8 @@ runAspnmyRegistryCache(){
     if [ -f "$FILE_NAME" ]; then
         # 先删除原始文件再进行强制覆盖
         rm -rf $BASE_DIR/certs/fullchain.pem && rm -rf $BASE_DIR/certs/privkey.pem
-        cp -rf  /etc/letsencrypt/live/$DOMAIN/fullchain.pem  $BASE_DIR/certs/fullchain.pem
-        cp -rf  /etc/letsencrypt/live/$DOMAIN/privkey.pem  $BASE_DIR/certs/privkey.pem
+        cp -rf  /etc/letsencrypt/live/$DOMAIN/fullchain.pem  $BASE_DIR/certs/
+        cp -rf  /etc/letsencrypt/live/$DOMAIN/privkey.pem  $BASE_DIR/certs/
         docker-compose -f $FILE_NAME up -d
         log "文件 $FILE_NAME 存在。拉取镜像成功，请等待1-5分钟"
     else
