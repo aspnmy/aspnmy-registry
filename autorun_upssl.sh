@@ -150,8 +150,10 @@ get_SSL(){
         log "证书成功获取并配置。"
         #touch /etc/aspnmy_registry/ssl_lock.json && echo  '{"domain": "registry.hk.earth-oline.org","file_path" : "/etc/letsencrypt/live/registry.hk.earth-oline.org" }' > /etc/aspnmy_registry/ssl_lock.json
 
-        touch $BASE_DIR/ssl_lock.json
-        echo  '{"domain": " ${DOMAIN}" }' > $BASE_DIR/ssl_lock.json
+cat <<EOF > $BASE_DIR/ssl_lock.json
+{"domain": "${DOMAIN}" }
+EOF
+
     else
         log "证书获取失败。"
         exit 1
