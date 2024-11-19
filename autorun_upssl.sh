@@ -40,7 +40,7 @@ log() {
 # 检查配置文件是否存在
 if [ ! -f "$CONFIG_FILE" ]; then
     log "错误：配置文件 '$CONFIG_FILE' 不存在。"
-    curl -sSL https://raw.githubusercontent.com/aspnmy/aspnmy-registry/refs/heads/docker-registry/.config.json -o .config.json
+    curl -sSL https://raw.githubusercontent.com/aspnmy/aspnmy-registry/refs/heads/docker-registry/.config.json -o ${BASE_DIR}/.config.json
     log "下载 '$CONFIG_FILE' 成功。"
 fi
 
