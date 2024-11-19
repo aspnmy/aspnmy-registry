@@ -63,7 +63,7 @@ function update_ssl(){
     # /etc/letsencrypt/live/yourdomain.com/chain.pem
 
 
-    curl -sSL https://raw.githubusercontent.com/aspnmy/aspnmy-registry/refs/heads/docker-registry/autorun_upssl.sh  -o autorun_upssl.sh  && bash autorun_upssl.sh
+    curl -sSL https://raw.githubusercontent.com/aspnmy/aspnmy-registry/refs/heads/docker-registry/autorun_upssl.sh  -o autorun_upssl.sh && chmod u+x autorun_upssl.sh && bash autorun_upssl.sh
 
 }
 
