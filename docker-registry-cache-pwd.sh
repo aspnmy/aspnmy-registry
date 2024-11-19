@@ -84,7 +84,7 @@ set_htpasswd() {
 }
 
 update_docker_env(){
-    cp -r  /etc/letsencrypt/live/$DOMAIN  $BASE_DIR/certs
+    cp -r  /etc/letsencrypt/live/${DOMAIN}  $BASE_DIR/certs
     curl -sSL https://raw.githubusercontent.com/aspnmy/aspnmy-registry/refs/heads/docker-registry/en/proxy-config-en.yml -o $BASE_DIR/config/proxy-config-en.yml
     log "更新aspnmy-registry-cache初始参数完成"
 }
@@ -100,7 +100,7 @@ FILE_NAME="$BASE_DIR/config/docker-registry.yml"
 # 检查文件是否已存在
 if [ -f "$FILE_NAME" ]; then
     echo "文件 $FILE_NAME 已存在。"
-    exit 1
+    rm -rf $FILE_NAME
 fi
 
 # 创建并写入内容到文件
