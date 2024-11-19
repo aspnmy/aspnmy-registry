@@ -13,24 +13,6 @@ SSLOCK="$BASE_DIR/ssl_lock.json"
 # 配置基本业务目录
 mkdir -p $BASE_DIR/{"certs","passwd","config"}
 mkdir -p /opt/aspnmy_registry/registry_data
-# 日志记录函数
-log() {
-    local message="[Aspnmy Log]: $1"
-    case "$1" in
-        *"失败"*|*"错误"*|*"请使用 root 或 sudo 权限运行此脚本"*)
-            echo -e "${RED}${message}${NC}" 2>&1 | tee -a "${BASE_DIR}/install.log"
-            ;;
-        *"成功"*)
-            echo -e "${GREEN}${message}${NC}" 2>&1 | tee -a "${BASE_DIR}/install.log"
-            ;;
-        *"忽略"*|*"跳过"*)
-            echo -e "${YELLOW}${message}${NC}" 2>&1 | tee -a "${BASE_DIR}/install.log"
-            ;;
-        *)
-            echo -e "${BLUE}${message}${NC}" 2>&1 | tee -a "${BASE_DIR}/install.log"
-            ;;
-    esac
-}
 
 # 从 JSON 文件中读取配置并进行校验
 DOMAIN=$(jq -r '.domain' "$SSLOCK")
