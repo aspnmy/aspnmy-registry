@@ -85,9 +85,7 @@ set_htpasswd() {
 }
 
 update_docker_env(){
-    # 先删除原始文件再进行强制覆盖
-    rm -rf $BASE_DIR/certs/fullchain.pem && rm -rf $BASE_DIR/certs/privkey.pem
-    cp -rf  /etc/letsencrypt/live/$DOMAIN/*.*  $BASE_DIR/certs/
+
 
     curl -sSL https://raw.githubusercontent.com/aspnmy/aspnmy-registry/refs/heads/docker-registry/en/proxy-config-en.yml -o $BASE_DIR/config/proxy-config-en.yml
     log "更新aspnmy-registry-cache初始参数完成"
@@ -135,6 +133,9 @@ runAspnmyRegistryCache(){
 
     # 检查文件是否已存在
     if [ -f "$FILE_NAME" ]; then
+        # 先删除原始文件再进行强制覆盖
+        rm -rf $BASE_DIR/certs/fullchain.pem && rm -rf $BASE_DIR/certs/privkey.pem
+        cp -rf  /etc/letsencrypt/live/$DOMAIN/*.*  $BASE_DIR/certs/
         docker-compose -f $FILE_NAME up -d
         log "文件 $FILE_NAME 存在。拉取镜像成功，请等待1-5分钟"
     else
