@@ -97,13 +97,7 @@ set_docker_compane_file(){
 
 # 文件名
 FILE_NAME="$BASE_DIR/config/docker-registry.yml"
-
-# 检查文件是否已存在
-if [ -f "$FILE_NAME" ]; then
-    echo "文件 $FILE_NAME 已存在。"
-    rm -rf $FILE_NAME
-fi
-
+rm -rf $FILE_NAME
 # 创建并写入内容到文件
 cat <<EOF > $FILE_NAME
 name: aspnmy-registry-cache
@@ -116,8 +110,8 @@ services:
             # 配置缓存模式
             - $BASE_DIR/config/proxy-config-en.yml:/etc/docker/registry/config.yml:ro
             # 配置ssl证书
-            - $BASE_DIR/certs/$DOMAIN/fullchain.pem:/certs/fullchain.pem
-            - $BASE_DIR/certs/$DOMAIN/privkey.pem:/certs/privkey.pem
+            - $BASE_DIR/certs/${DOMAIN}/fullchain.pem:/certs/fullchain.pem
+            - $BASE_DIR/certs/${DOMAIN}/privkey.pem:/certs/privkey.pem
             # 配置仓库实际挂载地址
             - /opt/aspnmy_registry/registry_data:/var/lib/registry
         environment:
