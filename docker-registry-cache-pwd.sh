@@ -115,7 +115,7 @@ services:
         environment:
             - REGISTRY_PROXY_REMOTEURL=https://registry-1.docker.io
             - REGISTRY_AUTH=htpasswd
-            #- REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm
+            - REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm
             - REGISTRY_AUTH_HTPASSWD_PATH=/etc/docker/registry/htpasswd
             - REGISTRY_HTTP_TLS_CERTIFICATE=/certs/fullchain.pem
             - REGISTRY_HTTP_TLS_KEY=/certs/privkey.pem
