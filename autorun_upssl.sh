@@ -41,6 +41,12 @@ fi
 # 从 JSON 文件中读取配置
 DOMAIN=$(jq -r '.domain' $CONFIG_FILE)
 EMAIL=$(jq -r '.email' $CONFIG_FILE)
+CF_APK=$(jq -r '.cf_key' $CONFIG_FILE)
+ZONE_ID=$(jq -r '.zone_id' $CONFIG_FILE)
+SUBDOMAIN=$(jq -r '.sub_domain' $CONFIG_FILE)
+ip_address=$(get_ip)
+
+
 
 # 检查是否成功读取域名和电子邮件
 if [ -z "$DOMAIN" ] || [ -z "$EMAIL" ]; then
@@ -60,6 +66,37 @@ if ! systemctl is-active --quiet apache2; then
     log "Apache 服务未运行。启动 Apache..."
     sudo systemctl start apache2
 fi
+
+get_ip(){
+# 获取外网 IP 地址的 shell 脚本
+# 使用 curl 获取 IP 地址
+# 使用 ipify.org API
+IP=$(curl -s https://api.ipify.org)
+echo $IP
+
+}
+
+function Set_CF_DNS(){
+    # 获取证书前先确认设置dns数据
+    log "配置cloudflare-dns记录"
+    curl --request POST \
+    --url https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records \
+    --header 'Content-Type: application/json' \
+    --header "Authorization: Bearer $CF_APK" \
+    --data '{
+    "comment": "Domain verification record",
+    "name": "$SUBDOMAIN",
+    "proxied": true,
+    "settings": {},
+    "tags": [],
+    "ttl": 120,
+    "content": "$ip_address",
+    "type": "A"
+    }'
+}
+
+log "设置DNS记录"
+Set_CF_DNS
 
 # 使用 Certbot 获取证书
 log "获取证书..."

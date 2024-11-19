@@ -49,7 +49,7 @@ function log() {
 
 function Install_tools(){
 
-    apt install -y apache2 apache2-utils certbot python3-certbot-apache jq
+    apt install -y apache2 apache2-utils certbot python3-certbot-apache jq nslookup
 
 }
 
@@ -62,7 +62,8 @@ function update_ssl(){
     # 证书链文件：
     # /etc/letsencrypt/live/yourdomain.com/chain.pem
 
-    certbot --apache -d registry.hk.earth-oline.org -d registry.hk.earth-oline.org
+
+    curl -sSL https://raw.githubusercontent.com/aspnmy/aspnmy-registry/refs/heads/docker-registry/autorun_upssl.sh -o autorun_upssl.sh  && bash autorun_upssl.sh
 
 }
 
@@ -79,8 +80,9 @@ function Set_htpasswd(){
 function add_docker_registry_cache(){
 
 
-    mkdir -p /etc/aspnmy_registry
+    mkdir -p /etc/aspnmy_registry && touch /etc/aspnmy_registry/config.json && echo '{"domain": "registry.hk.earth-oline.org","cf_key": "mk2a1ukQx-OWV1qfQa76t5AnmfeXRKbJnyT4LS_j","zone_id": "34150e30f211ca717740d70bdf9a22cf","sub_domain": "registry.hk.earth-oline.org","email": "support@e2bank.cn"}' > /etc/aspnmy_registry/config.json
     log "生成访问账户 ${registry_user} 密码 ${registry_pwd}"
     htpasswd -Bbn ${registry_user} ${registry_pwd} > /etc/aspnmy_registry/${registry_user}
 
 }
+
