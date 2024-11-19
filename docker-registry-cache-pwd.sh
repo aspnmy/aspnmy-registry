@@ -15,7 +15,10 @@ random_username() {
 random_password() {
     tr -dc 'A-Za-z0-9@#$%^&*()_+' </dev/urandom | head -c 16
 }
-
+CURRENT_DIR=$(
+    cd "$(dirname "$0")" || exit
+    pwd
+)
 # 日志记录函数
 log() {
     local message="[Aspnmy Log]: $1"

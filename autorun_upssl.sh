@@ -14,21 +14,25 @@ NC='\033[0m'
 BASE_DIR="/etc/aspnmy_registry"
 CONFIG_FILE="${BASE_DIR}/config.json"
 
+CURRENT_DIR=$(
+    cd "$(dirname "$0")" || exit
+    pwd
+)
 # 日志记录函数
 log() {
     local message="[Aspnmy Log]: $1"
     case "$1" in
         *"失败"*|*"错误"*|*"请使用 root 或 sudo 权限运行此脚本"*)
-            echo -e "${RED}${message}${NC}" 2>&1 | tee -a "${BASE_DIR}/install.log"
+            echo -e "${RED}${message}${NC}" 2>&1 | tee -a "${CURRENT_DIR}/install.log"
             ;;
         *"成功"*)
-            echo -e "${GREEN}${message}${NC}" 2>&1 | tee -a "${BASE_DIR}/install.log"
+            echo -e "${GREEN}${message}${NC}" 2>&1 | tee -a "${CURRENT_DIR}/install.log"
             ;;
         *"忽略"*|*"跳过"*)
-            echo -e "${YELLOW}${message}${NC}" 2>&1 | tee -a "${BASE_DIR}/install.log"
+            echo -e "${YELLOW}${message}${NC}" 2>&1 | tee -a "${CURRENT_DIR}/install.log"
             ;;
         *)
-            echo -e "${BLUE}${message}${NC}" 2>&1 | tee -a "${BASE_DIR}/install.log"
+            echo -e "${BLUE}${message}${NC}" 2>&1 | tee -a "${CURRENT_DIR}/install.log"
             ;;
     esac
 }
@@ -39,12 +43,36 @@ if [ ! -f "$CONFIG_FILE" ]; then
     exit 1
 fi
 
-# 从 JSON 文件中读取配置
+# 从 JSON 文件中读取配置并进行校验
 DOMAIN=$(jq -r '.domain' "$CONFIG_FILE")
+if [ -z "$DOMAIN" ]; then
+    log "配置错误：域名未设置。"
+    exit 1
+fi
+
 EMAIL=$(jq -r '.email' "$CONFIG_FILE")
+if [ -z "$EMAIL" ]; then
+    log "配置错误：电子邮件地址未设置。"
+    exit 1
+fi
+
 CF_API_KEY=$(jq -r '.cf_key' "$CONFIG_FILE")
+if [ -z "$CF_API_KEY" ]; then
+    log "配置错误：Cloudflare API 密钥未设置。"
+    exit 1
+fi
+
 ZONE_ID=$(jq -r '.zone_id' "$CONFIG_FILE")
+if [ -z "$ZONE_ID" ]; then
+    log "配置错误：Cloudflare 区域 ID 未设置。"
+    exit 1
+fi
+
 SUBDOMAIN=$(jq -r '.sub_domain' "$CONFIG_FILE")
+if [ -z "$SUBDOMAIN" ]; then
+    log "配置错误：子域名未设置。"
+    exit 1
+fi
 
 # 获取外网 IP 地址
 get_ip_address() {
@@ -59,12 +87,6 @@ get_ip_address() {
 }
 
 ip_address=$(get_ip_address)
-
-# 检查是否成功读取域名和电子邮件
-if [ -z "$DOMAIN" ] || [ -z "$EMAIL" ]; then
-    log "配置错误：域名或电子邮件地址未设置。"
-    exit 1
-fi
 
 # 安装 Certbot 和 Apache 插件（如果尚未安装）
 install_certbot() {
