@@ -108,7 +108,8 @@ services:
             # 配置缓存模式
             - $BASE_DIR/config/proxy-config-en.yml:/etc/docker/registry/config.yml:ro
             # 配置ssl证书此处为目录模式
-            - $BASE_DIR/certs:/certs
+            - /etc/letsencrypt/live/$DOMAIN/fullchain.pem:/certs/fullchain.pem
+            - /etc/letsencrypt/live/$DOMAIN/privkey.pem:/certs/privkey.pem
             # 配置仓库实际挂载地址
             - /opt/aspnmy_registry/registry_data:/var/lib/registry
         environment:
@@ -133,10 +134,7 @@ runAspnmyRegistryCache(){
 
     # 检查文件是否已存在
     if [ -f "$FILE_NAME" ]; then
-        # 先删除原始文件再进行强制覆盖
-        rm -rf $BASE_DIR/certs/fullchain.pem && rm -rf $BASE_DIR/certs/privkey.pem
-        cp -rf  /etc/letsencrypt/live/$DOMAIN/fullchain.pem  $BASE_DIR/certs/
-        cp -rf  /etc/letsencrypt/live/$DOMAIN/privkey.pem  $BASE_DIR/certs/
+
         docker-compose -f $FILE_NAME up -d
         log "文件 $FILE_NAME 存在。拉取镜像成功，请等待1-5分钟"
     else
