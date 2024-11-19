@@ -28,6 +28,7 @@ services:
             - /opt/aspnmy_registry/certs/registry.ny.earth-oline.org-privkey.pem:/certs/registry.ny.earth-oline.org-privkey.pem
             - /opt/aspnmy_registry/registry_data:/var/lib/registry
         environment:
+            - REGISTRY_PROXY_REMOTEURL=https://registry-1.docker.io
             - REGISTRY_AUTH=htpasswd
             - REGISTRY_AUTH_HTPASSWD_REALM: Registry Realm
             - REGISTRY_AUTH_HTPASSWD_PATH=/etc/docker/registry/htpasswd
@@ -48,6 +49,7 @@ podman run --name podman-registry \
     # 配置缓存模式
     -v /opt/aspnmy_registry/config.yml:/etc/docker/registry/config.yml:ro
     -v /opt/aspnmy_registry/auth:/auth:z \
+    -e "REGISTRY_PROXY_REMOTEURL=https://registry-1.docker.io"
     -e "REGISTRY_AUTH=htpasswd" \
     -e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm" \
     -e REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd \
