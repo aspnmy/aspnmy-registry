@@ -20,17 +20,23 @@ services:
         restart: always
         container_name: registry
         volumes:
-            - /opt/aspnmy_registry/myregistry.htpasswd:/etc/docker/registry/htpasswd:ro
+            - /opt/aspnmy_registry/passwd/aspnmy_registry.htpasswd:/etc/docker/registry/htpasswd:ro
             # 配置缓存模式
-            - /opt/aspnmy_registry/config.yml:/etc/docker/registry/config.yml:ro
+            # - /opt/aspnmy_registry/config/proxy-config-en.yml:/etc/docker/registry/config.yml:ro
+            # 配置ssl证书
+            - /opt/aspnmy_registry/certs/registry.ny.earth-oline.org-fullchain.pem:/certs/registry.ny.earth-oline.org-fullchain.pem
+            - /opt/aspnmy_registry/certs/registry.ny.earth-oline.org-privkey.pem:/certs/registry.ny.earth-oline.org-privkey.pem
+            - /opt/aspnmy_registry/registry_data:/var/lib/registry
         environment:
             - REGISTRY_AUTH=htpasswd
+            - REGISTRY_AUTH_HTPASSWD_REALM: Registry Realm
             - REGISTRY_AUTH_HTPASSWD_PATH=/etc/docker/registry/htpasswd
-            - REGISTRY_HTTP_TLS_CERTIFICATE=/certs/domain.crt
-            - REGISTRY_HTTP_TLS_KEY=/certs/domain.key
+            - REGISTRY_HTTP_TLS_CERTIFICATE=/certs/registry.ny.earth-oline.org-fullchain.pem
+            - REGISTRY_HTTP_TLS_KEY=/certs/registry.ny.earth-oline.org-privkey.pem
+            #- REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /var/lib/registry
         ports:
             - 5000:5000
-        image: registry:2
+        image: registry:latest
 ```
 
 ### podman私有库配置文件
