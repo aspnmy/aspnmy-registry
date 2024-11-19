@@ -77,7 +77,7 @@ fi
 # 获取外网 IP 地址
 get_ip_address() {
     local ip_address
-    ip_address=$(curl -s https://api.ipify.org) 
+    ip_address=$(curl -s https://api.ipify.org)
     if [ -z "$ip_address" ]; then
         log "错误：无法获取外网 IP 地址。"
         exit 1
