@@ -80,11 +80,13 @@ set_htpasswd() {
     local filedir=$BASE_DIR/${username}
     log "生成访问账户 ${username} 密码 ${password}"
     htpasswd -Bbn "${username}" "${password}" > $filedir
-    cp -r $BASE_DIR/${username}  $BASE_DIR/passwd
+    cp -r $BASE_DIR/${username}  $BASE_DIR/passwd/htpasswd
 }
 
 update_docker_env(){
     cp -r  /etc/letsencrypt/live/$DOMAIN  $BASE_DIR/certs
+    curl -sSL https://raw.githubusercontent.com/aspnmy/aspnmy-registry/refs/heads/docker-registry/en/proxy-config-en.yml -o $BASE_DIR/config/proxy-config-en.yml
+    log "更新aspnmy-registry-cache初始参数完成"
 }
 
 set_docker_compane_file(){
@@ -109,7 +111,7 @@ services:
         restart: always
         container_name: aspnmy-registry-cache
         volumes:
-            - $BASE_DIR/passwd/aspnmy_registry.htpasswd:/etc/docker/registry/htpasswd:ro
+            - $BASE_DIR/passwd/htpasswd:/etc/docker/registry/htpasswd:ro
             # 配置缓存模式
             - $BASE_DIR/config/proxy-config-en.yml:/etc/docker/registry/config.yml:ro
             # 配置ssl证书
