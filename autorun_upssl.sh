@@ -12,7 +12,7 @@ NC='\033[0m'
 
 # 指定配置文件和目录
 BASE_DIR="/etc/aspnmy_registry"
-CONFIG_FILE="${BASE_DIR}/config.json"
+CONFIG_FILE="${BASE_DIR}/.config.json"
 
 CURRENT_DIR=$(
     cd "$(dirname "$0")" || exit
@@ -40,7 +40,8 @@ log() {
 # 检查配置文件是否存在
 if [ ! -f "$CONFIG_FILE" ]; then
     log "错误：配置文件 '$CONFIG_FILE' 不存在。"
-    exit 1
+    curl -sSL https://raw.githubusercontent.com/aspnmy/aspnmy-registry/refs/heads/docker-registry/.config.json -o .config.json
+    log "下载 '$CONFIG_FILE' 成功。"
 fi
 
 # 从 JSON 文件中读取配置并进行校验
@@ -56,23 +57,24 @@ if [ -z "$EMAIL" ]; then
     exit 1
 fi
 
-CF_API_KEY=$(jq -r '.cf_key' "$CONFIG_FILE")
-if [ -z "$CF_API_KEY" ]; then
-    log "配置错误：Cloudflare API 密钥未设置。"
-    exit 1
-fi
+# CF_API_KEY ZONE_ID SUBDOMAIN 非必须变量 可不判断
+# CF_API_KEY=$(jq -r '.cf_key' "$CONFIG_FILE")
+# if [ -z "$CF_API_KEY" ]; then
+#     log "配置错误：Cloudflare API 密钥未设置。"
+#     exit 1
+# fi
 
-ZONE_ID=$(jq -r '.zone_id' "$CONFIG_FILE")
-if [ -z "$ZONE_ID" ]; then
-    log "配置错误：Cloudflare 区域 ID 未设置。"
-    exit 1
-fi
+# ZONE_ID=$(jq -r '.zone_id' "$CONFIG_FILE")
+# if [ -z "$ZONE_ID" ]; then
+#     log "配置错误：Cloudflare 区域 ID 未设置。"
+#     exit 1
+# fi
 
-SUBDOMAIN=$(jq -r '.sub_domain' "$CONFIG_FILE")
-if [ -z "$SUBDOMAIN" ]; then
-    log "配置错误：子域名未设置。"
-    exit 1
-fi
+# SUBDOMAIN=$(jq -r '.sub_domain' "$CONFIG_FILE")
+# if [ -z "$SUBDOMAIN" ]; then
+#     log "配置错误：子域名未设置。"
+#     exit 1
+# fi
 
 # 获取外网 IP 地址
 get_ip_address() {
