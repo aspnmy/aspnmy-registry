@@ -149,6 +149,10 @@ get_SSL(){
     # 检查证书是否成功获取
     if [ $? -eq 0 ]; then
         log "证书成功获取并配置。"
+        #touch /etc/aspnmy_registry/ssl_lock.json && echo  '{"domain": "registry.hk.earth-oline.org","file_path" : "/etc/letsencrypt/live/registry.hk.earth-oline.org" }' > /etc/aspnmy_registry/ssl_lock.json
+
+        touch $BASE_DIR/ssl_lock.json
+        echo  '{"domain": "$DOMAIN","file_path" : "/etc/letsencrypt/live/$DOMAIN" }' > $BASE_DIR/ssl_lock.json
     else
         log "证书获取失败。"
         exit 1
@@ -165,6 +169,7 @@ restart_web(){
     fi
     log "Apache 服务重启成功。"
 }
+
 
 
 main(){
