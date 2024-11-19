@@ -10,6 +10,10 @@ NC='\033[0m'
 BASE_DIR="/etc/aspnmy_registry"
 SSLOCK="$BASE_DIR/ssl_lock.json"
 
+# 配置基本业务目录
+mkdir -p $BASE_DIR/{"certs","passwd","config"}
+mkdir -p /opt/aspnmy_registry/registry_data
+
 # 从 JSON 文件中读取配置并进行校验
 DOMAIN=$(jq -r '.domain' "$SSLOCK")
 if [ -z "$DOMAIN" ]; then
@@ -33,16 +37,16 @@ log() {
     local message="[Aspnmy Log]: $1"
     case "$1" in
         *"失败"*|*"错误"*|*"请使用 root 或 sudo 权限运行此脚本"*)
-            echo -e "${RED}${message}${NC}" 2>&1 | tee -a "${CURRENT_DIR}/install.log"
+            echo -e "${RED}${message}${NC}" 2>&1 | tee -a "${BASE_DIR}/install.log"
             ;;
         *"成功"*)
-            echo -e "${GREEN}${message}${NC}" 2>&1 | tee -a "${CURRENT_DIR}/install.log"
+            echo -e "${GREEN}${message}${NC}" 2>&1 | tee -a "${BASE_DIR}/install.log"
             ;;
         *"忽略"*|*"跳过"*)
-            echo -e "${YELLOW}${message}${NC}" 2>&1 | tee -a "${CURRENT_DIR}/install.log"
+            echo -e "${YELLOW}${message}${NC}" 2>&1 | tee -a "${BASE_DIR}/install.log"
             ;;
         *)
-            echo -e "${BLUE}${message}${NC}" 2>&1 | tee -a "${CURRENT_DIR}/install.log"
+            echo -e "${BLUE}${message}${NC}" 2>&1 | tee -a "${BASE_DIR}/install.log"
             ;;
     esac
 }
@@ -73,14 +77,13 @@ update_ssl() {
 set_htpasswd() {
     local username=$(random_username)
     local password=$(random_password)
+    local filedir=$BASE_DIR/${username}
     log "生成访问账户 ${username} 密码 ${password}"
-    htpasswd -Bbn "${username}" "${password}" > $BASE_DIR/${username}
+    htpasswd -Bbn "${username}" "${password}" > $filedir
+    cp -r $BASE_DIR/${username}  $BASE_DIR/passwd
 }
 
 update_docker_env(){
-    mkdir -p $BASE_DIR/{"certs","passwd","config"}
-    mkdir -p /opt/aspnmy_registry/registry_data
-    cp -r $BASE_DIR/${username}  $BASE_DIR/passwd/${username}
     cp -r  /etc/letsencrypt/live/$DOMAIN  $BASE_DIR/certs
 }
 
