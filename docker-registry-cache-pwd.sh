@@ -16,7 +16,7 @@ mkdir -p /opt/aspnmy_registry/registry_data
 
 # 从 JSON 文件中读取配置并进行校验
 DOMAIN=$(jq -r '.domain' "$SSLOCK")
-log "DOMAIN : $DOMAIN"
+log "DOMAIN的值 : $DOMAIN"
 if [ -z "$DOMAIN" ]; then
     log "配置错误：域名证书文件未生成。"
     exit 1
