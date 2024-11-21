@@ -36,49 +36,86 @@ log() {
 
 # 检查配置文件是否存在
 if [ ! -f "$CONFIG_FILE" ]; then
-    log "错误：配置文件 '$CONFIG_FILE' 不存在。"
-    curl -sSL https://raw.githubusercontent.com/aspnmy/aspnmy-registry/refs/heads/docker-registry/.config.json -o ${BASE_DIR}/.config.json
-    log "下载 '$CONFIG_FILE' 成功。"
+    log "配置错误:域名参数不存在先进行配置。"
+    Config_init
+
 fi
+
+
+
+Config_init() {
+
+    # 初始化变量
+    key1=""
+    key2=""
+
+    # 循环直到必填参数被正确填写
+    while true; do
+        echo "请输入配置信息:"
+
+        # 读取用户输入的必选值
+        read -p "请输入域名 (domain): " key1
+        if [ -z "$key1" ]; then
+            echo "域名是必填项，请重新输入。"
+        else
+            break  # 跳出循环，继续执行
+        fi
+    done
+
+    while true; do
+        read -p "请输入邮箱 (email): " key2
+        if [ -z "$key2" ]; then
+            echo "邮箱是必填项，请重新输入。"
+        else
+            break  # 跳出循环，继续执行
+        fi
+    done
+
+    # 读取用户输入的可选值
+    read -p "请输入Cloudflare API密钥 (cf_key) [如需自动化使用Cloudflare-Dns配置需要配置这个参数/可选/按回车使用默认值]:" key3
+    read -p "请输入Cloudflare Zone ID (zone_id) [如需自动化使用Cloudflare-Dns配置需要配置这个参数/可选/按回车使用默认值]:" key4
+    read -p "请输入子域名 (sub_domain) [如需自动化使用Cloudflare-Dns配置需要配置这个参数/可选/按回车使用默认值]:" key5
+    # 如果 $key5 为空，则设置其值与 $key1 相同
+    if [ -z "$key5" ]; then
+        key5="$key1"
+    fi
+    # 将用户输入的值写入配置文件
+    cat <<EOF > $CONFIG_FILE
+{
+    "domain": "$key1",
+    "email": "$key2",
+    "cf_key": "$key3",
+    "zone_id": "$key4",
+    "sub_domain": "$key5"
+}
+EOF
+
+    echo "配置文件已生成:$CONFIG_FILE"
+}
+
+
 
 # 从 JSON 文件中读取配置并进行校验
 DOMAIN=$(jq -r '.domain' "$CONFIG_FILE")
 if [ -z "$DOMAIN" ]; then
-    log "配置错误：域名未设置。"
+    log "配置错误:域名未设置。"
     exit 1
 fi
 
 EMAIL=$(jq -r '.email' "$CONFIG_FILE")
 if [ -z "$EMAIL" ]; then
-    log "配置错误：电子邮件地址未设置。"
+    log "配置错误:电子邮件地址未设置。"
     exit 1
 fi
 
-# CF_API_KEY ZONE_ID SUBDOMAIN 非必须变量 可不判断
-# CF_API_KEY=$(jq -r '.cf_key' "$CONFIG_FILE")
-# if [ -z "$CF_API_KEY" ]; then
-#     log "配置错误：Cloudflare API 密钥未设置。"
-#     exit 1
-# fi
 
-# ZONE_ID=$(jq -r '.zone_id' "$CONFIG_FILE")
-# if [ -z "$ZONE_ID" ]; then
-#     log "配置错误：Cloudflare 区域 ID 未设置。"
-#     exit 1
-# fi
-
-# SUBDOMAIN=$(jq -r '.sub_domain' "$CONFIG_FILE")
-# if [ -z "$SUBDOMAIN" ]; then
-#     log "配置错误：子域名未设置。"
-#     exit 1
-# fi
 
 # 获取外网 IP 地址
 get_ip_address() {
     local ip_address
     ip_address=$(curl -s https://api.ipify.org)
     if [ -z "$ip_address" ]; then
-        log "错误：无法获取外网 IP 地址。"
+        log "错误:无法获取外网 IP 地址。"
         exit 1
     else
         echo "$ip_address"
@@ -92,7 +129,7 @@ install_certbot() {
     log "安装 Certbot..."
     sudo apt-get update && sudo apt-get install -y certbot python3-certbot-apache
     if [ $? -ne 0 ]; then
-        log "错误：Certbot 安装失败。"
+        log "错误:Certbot 安装失败。"
         exit 1
     fi
     log "Certbot 安装成功。"
@@ -107,7 +144,7 @@ if ! systemctl is-active --quiet apache2; then
     log "Apache 服务未运行。启动 Apache..."
     sudo systemctl start apache2
     if [ $? -ne 0 ]; then
-        log "错误：Apache 服务启动失败。"
+        log "错误:Apache 服务启动失败。"
         exit 1
     fi
     log "Apache 服务启动成功。"
@@ -132,7 +169,7 @@ set_cloudflare_dns() {
                        \"type\": \"A\"
                    }")
     if [ $? -ne 0 ]; then
-        log "错误：设置 Cloudflare DNS 记录失败。"
+        log "错误:设置 Cloudflare DNS 记录失败。"
         exit 1
     fi
     log "Cloudflare DNS 记录设置成功。"
@@ -165,7 +202,7 @@ restart_web(){
     log "重启 Apache 服务以应用新证书..."
     sudo systemctl restart apache2
     if [ $? -ne 0 ]; then
-        log "错误：Apache 服务重启失败。"
+        log "错误:Apache 服务重启失败。"
         exit 1
     fi
     log "Apache 服务重启成功。"
