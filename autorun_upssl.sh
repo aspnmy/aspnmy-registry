@@ -62,48 +62,64 @@ get_ip_address() {
     fi
 }
 
-# 安装 Certbot 和 Apache 插件（如果尚未安装）
-install_certbot() {
-    log "安装 Certbot..."
-
-    # 检测操作系统发行版
-    if [[ -f /etc/os-release ]]; then
-        . /etc/os-release
-        case $ID in
-        "ubuntu" | "debian")
-            if command_exists apt-get; then
-                sudo apt-get update && sudo apt-get install -y certbot python3-certbot-apache sudo apache2
+# 安装指定的软件包
+install_packages() {
+    local packages=("$@")
+    for pkg in "${packages[@]}"; do
+        if ! command_exists "$pkg"; then
+            log "安装 $pkg..."
+            if [[ -f /etc/os-release ]]; then
+                . /etc/os-release
+                case $ID in
+                    "ubuntu" | "debian")
+                        if command_exists apt-get; then
+                            sudo apt-get update && sudo apt-get install -y "$pkg"
+                        else
+                            log "错误: apt-get 命令不存在，但需要它来安装 $pkg"
+                            exit 1
+                        fi
+                        ;;
+                    "centos" | "rhel" | "fedora" | "rocky")
+                        if command_exists yum; then
+                            sudo yum install -y "$pkg"
+                        elif command_exists dnf; then
+                            sudo dnf install -y "$pkg"
+                        else
+                            log "错误: yum 或 dnf 命令不存在，但需要它们中的一个来安装 $pkg"
+                            exit 1
+                        fi
+                        ;;
+                    *)
+                        log "错误: 您的操作系统 '$ID' 不受支持，或缺少安装 $pkg 的命令"
+                        exit 1
+                        ;;
+                esac
             else
-                log "错误: apt-get 命令不存在，但需要它来安装 Certbot"
+                log "错误: 无法检测操作系统发行版"
                 exit 1
             fi
-            ;;
-        "centos" | "rhel" | "fedora" | "rocky")
-            if command_exists yum; then
-                sudo yum install -y certbot python3-certbot-apache sudo apache2
-            elif command_exists dnf; then
-                sudo dnf install -y certbot python3-certbot-apache sudo apache2
-            else
-                log "错误: yum 或 dnf 命令不存在，但需要它们中的一个来安装 Certbot"
+            if [ $? -ne 0 ]; then
+                log "错误: $pkg 安装失败"
                 exit 1
             fi
-            ;;
-        *)
-            log "错误: 您的操作系统 '$ID' 不受支持，或缺少安装 Certbot 的命令"
-            exit 1
-            ;;
-        esac
-    else
-        log "错误: 无法检测操作系统发行版"
-        exit 1
-    fi
-
-    if [ $? -ne 0 ]; then
-        log "错误: Certbot 安装失败"
-        exit 1
-    fi
-    log "Certbot 安装成功"
+            log "$pkg 安装成功"
+        fi
+    done
 }
+
+
+# 判断项目必须组件是否存在不存在就安装
+check_packages(){
+    # 检查 sudo 和 curl 和 apache2 是否存在，不存在则安装
+    install_packages "sudo" "curl" "apache2" "apache2-utils" "jq"
+
+    # 检查 Certbot 是否存在，不存在则安装
+    if ! command_exists certbot; then
+        log "安装 Certbot..."
+        install_packages "certbot" "python3-certbot-apache"
+    fi
+}
+
 
 # 验证 Apache 是否正在运行
 check_apache() {
@@ -133,6 +149,8 @@ check_cloudflare_dns(){
 set_cloudflare_dns() {
     log "配置 Cloudflare DNS 记录"
     local Response
+    local IP_ADDRESS
+    IP_ADDRESS=$(get_ip_address)
     if command_exists curl; then
         Response=$(curl --request POST \
             --url "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records" \
@@ -145,7 +163,7 @@ set_cloudflare_dns() {
                 \"settings\": {},
                 \"tags\": [],
                 \"ttl\": 120,
-                \"content\": \"$ip_address\",
+                \"content\": \"$IP_ADDRESS\",
                 \"type\": \"A\"
                 }")
         if [ $? -ne 0 ]; then
@@ -243,6 +261,8 @@ EOF
 main() {
     # 检查网络连接
     ip_address=$(get_ip_address)
+    # 检测并安装必须组件
+    check_packages
     # 初始化配置文件
     Config_init
 
