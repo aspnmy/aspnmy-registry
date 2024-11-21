@@ -31,15 +31,7 @@ log() {
             ;;
     esac
 }
-# 从 JSON 文件中读取配置并进行校验
-DOMAIN=$(jq -r '.domain' "$SSLOCK")
-log "DOMAIN的值 : $DOMAIN"
-if [ -z "$DOMAIN" ]; then
-    log "配置错误：域名证书文件未生成。先生成域名证书"
-    echo "配置错误：域名证书文件未生成。先生成域名证书"
-    update_ssl
 
-fi
 # 生成随机用户名和密码的函数
 random_username() {
     tr -dc 'a-zA-Z0-9' </dev/urandom | head -c 8
@@ -92,13 +84,36 @@ update_docker_env(){
     log "更新aspnmy-registry-cache初始参数完成"
 }
 
-set_docker_compose_file(){
+set_docker_compose_file() {
+    # 确保必要的变量被设置
+    if [ -z "$SSLOCK" ] || [ -z "$BASE_DIR" ]; then
+        log "错误：SSLOCK 或 BASE_DIR 变量未设置。"
+        return 1
+    fi
 
-# 文件名
-FILE_NAME="$BASE_DIR/config/docker-registry.yml"
-rm -rf $FILE_NAME
-# 创建并写入内容到文件
-cat <<EOF > $FILE_NAME
+    # 从 JSON 文件中读取配置并进行校验
+    local DOMAIN=$(jq -r '.domain' "$SSLOCK")
+    log "DOMAIN的值: $DOMAIN"
+
+    if [ -z "$DOMAIN" ]; then
+        log "配置错误：域名未设置。先生成域名证书。"
+        update_ssl
+        # 重新读取 DOMAIN，因为可能在 update_ssl 中设置
+        DOMAIN=$(jq -r '.domain' "$SSLOCK")
+        if [ -z "$DOMAIN" ]; then
+            log "配置错误：域名证书文件未生成。"
+            return 1
+        fi
+    fi
+
+    # 文件名
+    FILE_NAME="$BASE_DIR/config/docker-registry.yml"
+    if [ -f "$FILE_NAME" ]; then
+        log "警告：文件 $FILE_NAME 已存在，将被覆盖。"
+    fi
+
+    # 创建并写入内容到文件
+    cat <<EOF > "$FILE_NAME"
 name: aspnmy-registry-cache
 services:
     registry:
@@ -125,9 +140,7 @@ services:
         image: registry:2
 EOF
 
-log "文件 $FILE_NAME 创建成功。"
-
-
+    log "文件 $FILE_NAME 创建成功。"
 }
 
 runAspnmyRegistryCache(){
