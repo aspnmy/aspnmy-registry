@@ -36,3 +36,4 @@
 # 业务配置文件
 **.htpasswd
 **.pem
+**.yml
