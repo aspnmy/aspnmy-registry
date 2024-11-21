@@ -242,7 +242,7 @@ main() {
     # 设置初始化用户密码
     set_htpasswd
     # 更新基础配置
-    update_docker_env
+    set_docker_env
     # 设置docker-compose配置脚本
     set_docker_compose_file
     # 拉起主服务镜像
