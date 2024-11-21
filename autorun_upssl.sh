@@ -68,45 +68,53 @@ install_packages() {
     for pkg in "${packages[@]}"; do
         if ! command_exists "$pkg"; then
             log "安装 $pkg..."
-            if [[ -f /etc/os-release ]]; then
-                . /etc/os-release
-                case $ID in
-                    "ubuntu" | "debian")
-                        if command_exists apt-get; then
-                            if [[ "$pkg" == "sudo" ]]; then
-                                # 特殊处理 sudo 的安装，使用 curl 下载并安装
-                                curl -sS https://deb.debian.org/debian/pool/main/s/sudo/sudo_1.8.31-1_amd64.deb -o sudo.deb && dpkg -i sudo.deb || { log "错误: sudo 安装失败"; exit 1; }
-                                rm sudo.deb
+            if [ "$(id -u)" -eq 0 ]; then
+                # 如果是 root 用户，直接安装
+                if [[ -f /etc/os-release ]]; then
+                    . /etc/os-release
+                    case $ID in
+                        "ubuntu" | "debian")
+                            if command_exists apt-get; then
+                                apt-get update && apt-get install -y "$pkg"
                             else
-                                sudo apt-get update && sudo apt-get install -y "$pkg"
+                                log "错误: apt-get 命令不存在，但需要它来安装 $pkg"
+                                exit 1
                             fi
-                        else
-                            log "错误: apt-get 命令不存在，但需要它来安装 $pkg"
+                            ;;
+                        "centos" | "rhel" | "fedora" | "rocky")
+                            if command_exists yum || command_exists dnf; then
+                                if command_exists yum; then
+                                    yum install -y "$pkg"
+                                elif command_exists dnf; then
+                                    dnf install -y "$pkg"
+                                fi
+                            else
+                                log "错误: yum 或 dnf 命令不存在，但需要它们中的一个来安装 $pkg"
+                                exit 1
+                            fi
+                            ;;
+                        *)
+                            log "错误: 您的操作系统 '$ID' 不受支持，或缺少安装 $pkg 的命令"
                             exit 1
-                        fi
-                        ;;
-                    "centos" | "rhel" | "fedora" | "rocky")
-                        if [[ "$pkg" == "sudo" ]]; then
-                            # 特殊处理 sudo 的安装，使用 curl 下载并安装
-                            curl -sS https://kojipkgs.fedoraproject.org//packages/sudo/1.9.5p2-1.fc35/x86_64/sudo-1.9.5p2-1.fc35.x86_64.rpm -o sudo.rpm && sudo rpm -ivh sudo.rpm || { log "错误: sudo 安装失败"; exit 1; }
-                            rm sudo.rpm
-                        elif command_exists yum; then
-                            sudo yum install -y "$pkg"
-                        elif command_exists dnf; then
-                            sudo dnf install -y "$pkg"
-                        else
-                            log "错误: yum 或 dnf 命令不存在，但需要它们中的一个来安装 $pkg"
-                            exit 1
-                        fi
-                        ;;
-                    *)
-                        log "错误: 您的操作系统 '$ID' 不受支持，或缺少安装 $pkg 的命令"
-                        exit 1
-                        ;;
-                esac
+                            ;;
+                    esac
+                else
+                    log "错误: 无法检测操作系统发行版"
+                    exit 1
+                fi
             else
-                log "错误: 无法检测操作系统发行版"
-                exit 1
+                # 如果是非 root 用户，检查是否安装了 sudo
+                if command_exists sudo; then
+                    # 如果安装了 sudo，使用 sudo 来安装
+                    sudo apt-get update && sudo apt-get install -y "$pkg" # 适用于 Debian/Ubuntu 系统
+                    # 或者
+                    # sudo yum install -y "$pkg" # 适用于 CentOS/RHEL/Fedora/Rocky 系统
+                    # 或者
+                    # sudo dnf install -y "$pkg" # 适用于使用 dnf 的系统
+                else
+                    log "错误: 需要 root 权限来安装 $pkg。请使用 root 用户或安装 sudo 后重试。"
+                    exit 1
+                fi
             fi
             if [ $? -ne 0 ]; then
                 log "错误: $pkg 安装失败"
@@ -116,6 +124,7 @@ install_packages() {
         fi
     done
 }
+
 
 
 # 判断项目必须组件是否存在不存在就安装
