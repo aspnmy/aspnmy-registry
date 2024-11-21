@@ -62,7 +62,7 @@ get_ip_address() {
     fi
 }
 
-# 安装指定的软件包
+# 安装指定的软件包-没有sudo权限的时候从远程下载安装sudo
 install_packages() {
     local packages=("$@")
     for pkg in "${packages[@]}"; do
@@ -73,14 +73,24 @@ install_packages() {
                 case $ID in
                     "ubuntu" | "debian")
                         if command_exists apt-get; then
-                            sudo apt-get update && sudo apt-get install -y "$pkg"
+                            if [[ "$pkg" == "sudo" ]]; then
+                                # 特殊处理 sudo 的安装，使用 curl 下载并安装
+                                curl -sS https://deb.debian.org/debian/pool/main/s/sudo/sudo_1.8.31-1_amd64.deb -o sudo.deb && sudo dpkg -i sudo.deb || { log "错误: sudo 安装失败"; exit 1; }
+                                rm sudo.deb
+                            else
+                                sudo apt-get update && sudo apt-get install -y "$pkg"
+                            fi
                         else
                             log "错误: apt-get 命令不存在，但需要它来安装 $pkg"
                             exit 1
                         fi
                         ;;
                     "centos" | "rhel" | "fedora" | "rocky")
-                        if command_exists yum; then
+                        if [[ "$pkg" == "sudo" ]]; then
+                            # 特殊处理 sudo 的安装，使用 curl 下载并安装
+                            curl -sS https://kojipkgs.fedoraproject.org//packages/sudo/1.9.5p2-1.fc35/x86_64/sudo-1.9.5p2-1.fc35.x86_64.rpm -o sudo.rpm && sudo rpm -ivh sudo.rpm || { log "错误: sudo 安装失败"; exit 1; }
+                            rm sudo.rpm
+                        elif command_exists yum; then
                             sudo yum install -y "$pkg"
                         elif command_exists dnf; then
                             sudo dnf install -y "$pkg"
