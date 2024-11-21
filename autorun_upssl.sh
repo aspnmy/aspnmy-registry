@@ -127,8 +127,6 @@ check_apache() {
 check_cloudflare_dns(){
     if [[ -n "$CF_API_KEY" && -n "$ZONE_ID" && -n "$SUB_DOMAIN" ]]; then
         set_cloudflare_dns
-    else
-        log "错误:Cloudflare 配置信息不完整，无法设置 DNS 记录。"
     fi
 }
 # 设置 Cloudflare DNS 记录
