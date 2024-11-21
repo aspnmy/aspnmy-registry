@@ -75,7 +75,7 @@ install_packages() {
                         if command_exists apt-get; then
                             if [[ "$pkg" == "sudo" ]]; then
                                 # 特殊处理 sudo 的安装，使用 curl 下载并安装
-                                curl -sS https://deb.debian.org/debian/pool/main/s/sudo/sudo_1.8.31-1_amd64.deb -o sudo.deb && sudo dpkg -i sudo.deb || { log "错误: sudo 安装失败"; exit 1; }
+                                curl -sS https://deb.debian.org/debian/pool/main/s/sudo/sudo_1.8.31-1_amd64.deb -o sudo.deb && dpkg -i sudo.deb || { log "错误: sudo 安装失败"; exit 1; }
                                 rm sudo.deb
                             else
                                 sudo apt-get update && sudo apt-get install -y "$pkg"
