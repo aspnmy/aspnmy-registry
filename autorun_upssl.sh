@@ -98,18 +98,7 @@ EOF
 
 
 
-# 从 JSON 文件中读取配置并进行校验
-DOMAIN=$(jq -r '.domain' "$CONFIG_FILE")
-if [ -z "$DOMAIN" ]; then
-    log "配置错误:域名未设置。"
-    exit 1
-fi
 
-EMAIL=$(jq -r '.email' "$CONFIG_FILE")
-if [ -z "$EMAIL" ]; then
-    log "配置错误:电子邮件地址未设置。"
-    exit 1
-fi
 
 
 
