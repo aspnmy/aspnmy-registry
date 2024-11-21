@@ -10,6 +10,11 @@ NC='\033[0m'
 BASE_DIR="/etc/aspnmy_registry"
 SSLOCK="$BASE_DIR/ssl_lock.json"
 
+CURRENT_DIR=$(
+    cd "$(dirname "$0")" || exit
+    pwd
+)
+
 # 配置基本业务目录
 mkdir -p $BASE_DIR/{"certs","passwd","config"}
 mkdir -p /opt/aspnmy_registry/registry_data
@@ -32,6 +37,23 @@ log() {
     esac
 }
 
+clean_me(){
+    local SH_FILE="$CURRENT_DIR/docker-registry-cache-pwd.sh"
+    local SH_FILE_2="$CURRENT_DIR/autorun_upssl.sh"
+    # 检查脚本主体是否存在
+    if [ -f "$SH_FILE" ]; then
+        log "脚本主体已存在。"
+        read -p "是否要卸载脚本主体？(y/N): " confirm
+        if [[ ! $confirm =~ ^[Yy]$ ]]; then
+            log "操作已取消。"
+            return 1
+        fi
+        log "警告:文件 $SH_FILE 将被删除。"
+    fi
+    rm -rf $SH_FILE $SH_FILE_2
+}
+
+
 # 生成随机用户名和密码的函数
 random_username() {
     tr -dc 'a-zA-Z0-9' </dev/urandom | head -c 8
@@ -40,10 +62,7 @@ random_username() {
 random_password() {
     tr -dc 'A-Za-z0-9@#$%^&*()_+' </dev/urandom | head -c 16
 }
-CURRENT_DIR=$(
-    cd "$(dirname "$0")" || exit
-    pwd
-)
+
 
 # 安装必要的工具
 install_tools() {
@@ -235,6 +254,7 @@ runAspnmyRegistryCache(){
 main() {
     local current_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
     log "脚本开始执行，当前目录:$current_dir"
+
     # 安装依赖组件
     install_tools
     # 更新ssl证书文件
