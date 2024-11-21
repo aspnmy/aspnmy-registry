@@ -87,7 +87,7 @@ update_docker_env(){
 set_docker_compose_file() {
     # 确保必要的变量被设置
     if [ -z "$SSLOCK" ] || [ -z "$BASE_DIR" ]; then
-        log "错误：SSLOCK 或 BASE_DIR 变量未设置。"
+        log "错误:SSLOCK 或 BASE_DIR 变量未设置。"
         return 1
     fi
 
@@ -96,12 +96,12 @@ set_docker_compose_file() {
     log "DOMAIN的值: $DOMAIN"
 
     if [ -z "$DOMAIN" ]; then
-        log "配置错误：域名未设置。先生成域名证书。"
+        log "配置错误:域名未设置。先生成域名证书。"
         update_ssl
         # 重新读取 DOMAIN，因为可能在 update_ssl 中设置
         DOMAIN=$(jq -r '.domain' "$SSLOCK")
         if [ -z "$DOMAIN" ]; then
-            log "配置错误：域名证书文件未生成。"
+            log "配置错误:域名证书文件未生成。"
             return 1
         fi
     fi
@@ -109,7 +109,7 @@ set_docker_compose_file() {
     # 文件名
     FILE_NAME="$BASE_DIR/config/docker-registry.yml"
     if [ -f "$FILE_NAME" ]; then
-        log "警告：文件 $FILE_NAME 已存在，将被覆盖。"
+        log "警告:文件 $FILE_NAME 已存在，将被覆盖。"
     fi
 
     # 创建并写入内容到文件
@@ -164,7 +164,7 @@ runAspnmyRegistryCache(){
 # 主函数，执行所有设置
 main() {
     local current_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-    log "脚本开始执行，当前目录：$current_dir"
+    log "脚本开始执行，当前目录:$current_dir"
     # 安装依赖组件
     install_tools
     # 更新ssl证书文件
