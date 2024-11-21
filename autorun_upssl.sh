@@ -65,13 +65,14 @@ get_ip_address() {
 # 安装 Certbot 和 Apache 插件（如果尚未安装）
 install_certbot() {
     log "安装 Certbot..."
+
     # 检测操作系统发行版
     if [[ -f /etc/os-release ]]; then
         . /etc/os-release
         case $ID in
         "ubuntu" | "debian")
             if command_exists apt-get; then
-                sudo apt-get update && sudo apt-get install -y certbot python3-certbot-apache
+                sudo apt-get update && sudo apt-get install -y certbot python3-certbot-apache sudo apache2
             else
                 log "错误: apt-get 命令不存在，但需要它来安装 Certbot"
                 exit 1
@@ -79,9 +80,9 @@ install_certbot() {
             ;;
         "centos" | "rhel" | "fedora" | "rocky")
             if command_exists yum; then
-                sudo yum install -y certbot python3-certbot-apache
+                sudo yum install -y certbot python3-certbot-apache sudo apache2
             elif command_exists dnf; then
-                sudo dnf install -y certbot python3-certbot-apache
+                sudo dnf install -y certbot python3-certbot-apache sudo apache2
             else
                 log "错误: yum 或 dnf 命令不存在，但需要它们中的一个来安装 Certbot"
                 exit 1
@@ -118,11 +119,18 @@ check_apache() {
         fi
     else
         log "错误:systemctl 命令不存在"
-        # shellcheck disable=SC1017
         exit 1
     fi
 }
 
+# 判断 cloudflare 参数不为空的情况下才执行set_cloudflare_dns函数
+check_cloudflare_dns(){
+    if [[ -n "$CF_API_KEY" && -n "$ZONE_ID" && -n "$SUB_DOMAIN" ]]; then
+        set_cloudflare_dns
+    else
+        log "错误:Cloudflare 配置信息不完整，无法设置 DNS 记录。"
+    fi
+}
 # 设置 Cloudflare DNS 记录
 set_cloudflare_dns() {
     log "配置 Cloudflare DNS 记录"
@@ -249,7 +257,7 @@ main() {
     check_apache
 
     # 设置 Cloudflare DNS 记录
-    set_cloudflare_dns
+    check_cloudflare_dns
 
     # 获取 SSL 证书
     get_SSL
