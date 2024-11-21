@@ -77,10 +77,80 @@ set_htpasswd() {
     cp -r $BASE_DIR/${username}  $BASE_DIR/passwd/htpasswd
 }
 
-update_docker_env(){
+set_docker_env() {
+    local CONFIG_FILE="$BASE_DIR/config/proxy-config.yml"
+    local en_remoteurl="registry-1.docker.io"
+    local cn_remoteurl="gateway.cf.earth-oline.org"
+    local remoteurl=""
+    # 从 JSON 文件中读取配置并进行校验
+    local DOMAIN=$(jq -r '.domain' "$SSLOCK")
+    # 检查 BASE_DIR 是否已定义
+    if [ -z "$BASE_DIR" ]; then
+        log "错误:BASE_DIR 变量未定义。"
+        return 1
+    fi
 
+    # 检查配置文件是否存在
+    if [ -f "$CONFIG_FILE" ]; then
+        log "配置文件已存在。"
+        read -p "是否要覆盖现有的配置文件？(y/N): " confirm
+        if [[ ! $confirm =~ ^[Yy]$ ]]; then
+            log "操作已取消。"
+            return 1
+        fi
+        log "警告:文件 $CONFIG_FILE 将被覆盖。"
+    fi
 
-    curl -sSL https://raw.githubusercontent.com/aspnmy/aspnmy-registry/refs/heads/docker-registry/en/proxy-config-en.yml -o $BASE_DIR/config/proxy-config-en.yml
+    # 显示选择菜单
+    echo "请选择服务器所在的区域,国内请选(2),国外请选(1),其他自定义地址请自行输入:"
+    select opt in "$en_remoteurl" "$cn_remoteurl" "输入其他"; do
+        case $REPLY in
+            1) remoteurl=$opt; break;;
+            2) remoteurl=$opt; break;;
+            3)
+                # 循环直到用户输入一个非空值
+                while true; do
+                    read -p "请输入远程镜像域名 (domain): " remoteurl
+                    if [ -z "$remoteurl" ]; then
+                        echo "远程镜像域名是必填项，请重新输入。"
+                    else
+                        break
+                    fi
+                done
+                break;;
+            *) echo "无效选项，请重新选择。";;
+        esac
+    done
+
+    log "您选择的远程镜像域名是: $remoteurl"
+
+    # 创建并写入内容到文件
+    cat <<EOF > "$CONFIG_FILE"
+version: 0.1
+log:
+    fields:
+        service: registry
+storage:
+    cache:
+        blobdescriptor: inmemory
+    delete:
+        enabled: true
+    filesystem:
+        rootdirectory: /var/lib/registry
+http:
+    addr: :5000
+    host: $DOMAIN
+    tls:
+        certificate: /certs/fullchain.pem
+        key: /certs/privkey.pem
+
+    headers:
+        X-Content-Type-Options: [nosniff]
+proxy:
+    remoteurl: https://"$remoteurl"
+EOF
+
+    log "文件 $CONFIG_FILE 创建成功。"
     log "更新aspnmy-registry-cache初始参数完成"
 }
 
@@ -122,7 +192,7 @@ services:
         volumes:
             - $BASE_DIR/passwd/htpasswd:/etc/docker/registry/htpasswd:ro
             # 配置缓存模式
-            - $BASE_DIR/config/proxy-config-en.yml:/etc/docker/registry/config.yml:ro
+            - $BASE_DIR/config/proxy-config.yml:/etc/docker/registry/config.yml:ro
             # 配置ssl证书此处为目录模式
             - /etc/letsencrypt/live/$DOMAIN/fullchain.pem:/certs/fullchain.pem
             - /etc/letsencrypt/live/$DOMAIN/privkey.pem:/certs/privkey.pem

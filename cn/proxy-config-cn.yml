@@ -12,4 +12,4 @@ http:
   headers:
     X-Content-Type-Options: [nosniff]
 proxy:
-  remoteurl: https://docker.shdrr.org
+  remoteurl: https://gateway.cf.earth-oline.org
