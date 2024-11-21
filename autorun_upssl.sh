@@ -14,6 +14,12 @@ NC='\033[0m'
 BASE_DIR="/etc/aspnmy_registry"
 CONFIG_FILE="${BASE_DIR}/.config.json"
 
+DOMAIN=$(jq -r '.domain' "$CONFIG_FILE")
+EMAIL=$(jq -r '.email' "$CONFIG_FILE")
+CF_API_KEY=$(jq -r '.cf_key' "$CONFIG_FILE")
+ZONE_ID=$(jq -r '.zone_id' "$CONFIG_FILE")
+SUB_DOMAIN=$(jq -r '.sub_domain' "$CONFIG_FILE")
+
 
 # 日志记录函数
 log() {
@@ -99,9 +105,6 @@ EOF
 
 
 
-
-
-
 # 获取外网 IP 地址
 get_ip_address() {
     local ip_address
@@ -152,7 +155,7 @@ set_cloudflare_dns() {
                    --header "Authorization: Bearer $CF_API_KEY" \
                    --data "{
                        \"comment\": \"Domain verification record\",
-                       \"name\": \"$SUBDOMAIN\",
+                       \"name\": \"$SUB_DOMAIN\",
                        \"proxied\": true,
                        \"settings\": {},
                        \"tags\": [],
@@ -172,7 +175,6 @@ set_cloudflare_dns() {
 get_SSL(){
     # 使用 Certbot 获取证书
     log "获取证书..."
-    log "certbot --apache -d "$DOMAIN" --agree-tos --email "$EMAIL" --non-interactive --redirect"
     sudo certbot --apache -d "$DOMAIN" --agree-tos --email "$EMAIL" --non-interactive --redirect
 
     # 检查证书是否成功获取
