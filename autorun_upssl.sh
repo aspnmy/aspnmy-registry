@@ -34,17 +34,20 @@ log() {
     esac
 }
 
-# 检查配置文件是否存在
-if [ ! -f "$CONFIG_FILE" ]; then
-    log "配置错误:域名参数不存在先进行配置。"
-    Config_init
 
-fi
 
 
 
 Config_init() {
-
+    # 检查配置文件是否存在
+    if [ -f "$CONFIG_FILE" ]; then
+        echo "配置文件已存在。"
+        read -p "是否要覆盖现有的配置文件？(y/N): " confirm
+        if [[ ! $confirm =~ ^[Yy]$ ]]; then
+            echo "操作已取消。"
+            return 1  # 退出函数
+        fi
+    fi
     # 初始化变量
     key1=""
     key2=""
@@ -211,6 +214,8 @@ restart_web(){
 
 
 main(){
+
+    Config_init
     get_SSL
     restart_web
     log "自动化脚本执行完毕。"
