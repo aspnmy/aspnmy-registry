@@ -172,6 +172,7 @@ set_cloudflare_dns() {
 get_SSL(){
     # 使用 Certbot 获取证书
     log "获取证书..."
+    log "certbot --apache -d "$DOMAIN" --agree-tos --email "$EMAIL" --non-interactive --redirect"
     sudo certbot --apache -d "$DOMAIN" --agree-tos --email "$EMAIL" --non-interactive --redirect
 
     # 检查证书是否成功获取
