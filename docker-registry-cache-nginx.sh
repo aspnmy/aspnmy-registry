@@ -43,16 +43,16 @@ log() {
     local message="[Aspnmy Log]: $1"
     case "$1" in
         *"失败"*|*"错误"*|*"请使用 root 或 sudo 权限运行此脚本"*)
-            echo -e "${RED}${message}${NC}" 2>&1 | tee -a "${BASE_DIR}/install.log"
+            echo -e "${RED}${message}${NC}" 2>&1 | tee -a "$BASE_DIR/install.log"
             ;;
         *"成功"*)
-            echo -e "${GREEN}${message}${NC}" 2>&1 | tee -a "${BASE_DIR}/install.log"
+            echo -e "${GREEN}${message}${NC}" 2>&1 | tee -a "$BASE_DIR/install.log"
             ;;
         *"忽略"*|*"跳过"*)
-            echo -e "${YELLOW}${message}${NC}" 2>&1 | tee -a "${BASE_DIR}/install.log"
+            echo -e "${YELLOW}${message}${NC}" 2>&1 | tee -a "$BASE_DIR/install.log"
             ;;
         *)
-            echo -e "${BLUE}${message}${NC}" 2>&1 | tee -a "${BASE_DIR}/install.log"
+            echo -e "${BLUE}${message}${NC}" 2>&1 | tee -a "$BASE_DIR/install.log"
             ;;
     esac
 }
@@ -355,8 +355,10 @@ main() {
     set_htpasswd
     # 更新基础配置
     set_docker_env
+    # 设置Nginx的配置
+    set_Nignx_Config
     # 设置docker-compose配置脚本
-    set_docker_compose_file
+    set_docker_compose_Nignx_file
     # 拉起主服务镜像
     runAspnmyRegistryCache
     log "所有设置完成"
