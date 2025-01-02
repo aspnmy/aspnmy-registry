@@ -20,7 +20,7 @@ cat $pwd/install.log
 ```
 
 ```
-curl -sSL https://raw.githubusercontent.com/aspnmy/aspnmy-registry/refs/heads/docker-registry/docker-registry-cache-pwd.sh -o docker-registry-cache-pwd.sh && bash docker-registry-cache-pwd.sh
+curl -sSL https://raw.githubusercontent.com/aspnmy/aspnmy-registry/refs/heads/docker-registry/docker-registry-cache-dev.sh -o docker-registry-cache-dev.sh && bash docker-registry-cache-dev.sh
 ```
 
 ### docker私有库配置文件
